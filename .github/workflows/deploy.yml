@@ -10,9 +10,40 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  preflight-secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      PLAYWRIGHT_AUTH_STORAGE_STATE_JSON: ${{ secrets.PLAYWRIGHT_AUTH_STORAGE_STATE_JSON }}
+    steps:
+      - name: Check required deploy secrets
+        run: |
+          missing=()
+
+          if [[ -z "$CONVEX_DEPLOY_KEY" ]]; then
+            missing+=("CONVEX_DEPLOY_KEY")
+          fi
+
+          if [[ -z "$VERCEL_TOKEN" ]]; then
+            missing+=("VERCEL_TOKEN")
+          fi
+
+          if (( ${#missing[@]} > 0 )); then
+            echo "Missing required GitHub Actions secrets:" >&2
+            printf ' - %s\n' "${missing[@]}" >&2
+            exit 1
+          fi
+
+          if [[ -z "$PLAYWRIGHT_AUTH_STORAGE_STATE_JSON" ]]; then
+            echo "PLAYWRIGHT_AUTH_STORAGE_STATE_JSON not set; authenticated smoke will be skipped."
+          fi
+
   deploy-convex:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    needs: preflight-secrets
     env:
       CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
     steps:

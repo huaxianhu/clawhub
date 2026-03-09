@@ -28,6 +28,12 @@ Or use the GitHub Actions pipeline:
 gh workflow run deploy.yml
 ```
 
+GitHub Actions secrets required for `deploy.yml`:
+
+- `CONVEX_DEPLOY_KEY`
+- `VERCEL_TOKEN`
+- Optional: `PLAYWRIGHT_AUTH_STORAGE_STATE_JSON` for authenticated smoke coverage
+
 Ensure Convex env is set (auth + embeddings):
 
 - `AUTH_GITHUB_ID`
